@@ -1,10 +1,13 @@
 import express from "express";
-import ejs from 'ejs'
 import path from 'path'
 import { connectMongoDB } from "./connection.js";
 import { Router } from "./routes/urlRoutes.js";
 import { staticRouter } from "./routes/staticRouter.js";
+import { userRouter } from "./routes/userRoutes.js";
 import dotenv from 'dotenv'
+import cookieParser from "cookie-parser";
+import { restrictedUserLogin, checkAuth } from './middlewares/auth.js'
+
 dotenv.config()
 const app = express();
 
@@ -19,11 +22,14 @@ connectMongoDB(process.env.MONGODB_URL)
     .catch((err) => console.log("Error in monogodb connection", err));
 
 //Middleware
+app.use(cookieParser())
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }))
 
-app.use("/url", Router);
-app.use('/', staticRouter)
+//Routes
+app.use("/url", restrictedUserLogin, Router);
+app.use('/user', userRouter)
+app.use('/', checkAuth, staticRouter)
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () =>
     console.log(`App is running on port number ${PORT}`)
