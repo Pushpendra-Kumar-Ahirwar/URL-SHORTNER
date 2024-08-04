@@ -2,11 +2,12 @@ import { User } from "../models/userModel.js";
 import { setUser } from "../services/auth.js";
 
 async function handleUserSignup(req, res) {
-    const { email, name, password } = req.body;
+    const { email, name, password, role } = req.body;
     await User.create({
         email,
         password,
         name,
+        role,
     });
     return res.redirect("/");
 }
